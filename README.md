@@ -46,7 +46,5 @@ To use the code, follow these steps:
 Contributions to this repository are welcome. If you have any suggestions, bug fixes, or improvements, please feel free to open an issue or submit a pull request.
 
 ## Source:  https://en.wikipedia.org/wiki/RSA_(cryptosystem)
-## License
 
-This project is licensed under the [MIT License](LICENSE).
 
