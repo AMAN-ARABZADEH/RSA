@@ -1,9 +1,19 @@
 #include <iostream>
 #include <cmath>
 #include <string>
-#include <sstream>
+#include <sstream> // Include the <sstream> header
+
+/*
+ * Sources:
+ * https://en.wikipedia.org/wiki/RSA_(cryptosystem)
+ * geeksforgeeks.org/euclidean-algorithms-basic-and-extended/
+ * https://www.geeksforgeeks.org/c-program-to-check-prime-number/
+ * https://en.wikipedia.org/wiki/Modular_exponentiation
+ */
+
 
 // Function to check if a number is prime
+//  https://www.geeksforgeeks.org/c-program-to-check-prime-number/
 bool isPrime(int num) {
     if (num <= 1)
         return false;
@@ -15,6 +25,7 @@ bool isPrime(int num) {
 }
 
 // Function to compute the modular exponentiation
+// https://en.wikipedia.org/wiki/Modular_exponentiation
 int modExp(int base, int exponent, int modulus) {
     int result = 1;
     base = base % modulus;
@@ -28,23 +39,32 @@ int modExp(int base, int exponent, int modulus) {
 }
 
 // Function to calculate the modular inverse using the Extended Euclidean Algorithm
-int modInverse(int a, int m) {
-    int m0 = m, t, q;
-    int x0 = 0, x1 = 1;
-    if (m == 1)
+// geeksforgeeks.org/euclidean-algorithms-basic-and-extended/
+int modInverse(int number, int modulus) {
+    int originalModulus = modulus;
+    int temporary, quotient;
+    int previousCoefficient = 0, currentCoefficient = 1;
+
+    if (modulus == 1)
         return 0;
-    while (a > 1) {
-        q = a / m;
-        t = m;
-        m = a % m, a = t;
-        t = x0;
-        x0 = x1 - q * x0;
-        x1 = t;
+
+    while (number > 1) {
+        quotient = number / modulus;
+        temporary = modulus;
+        modulus = number % modulus;
+        number = temporary;
+
+        temporary = previousCoefficient;
+        previousCoefficient = currentCoefficient - quotient * previousCoefficient;
+        currentCoefficient = temporary;
     }
-    if (x1 < 0)
-        x1 += m0;
-    return x1;
+
+    if (currentCoefficient < 0)
+        currentCoefficient += originalModulus;
+
+    return currentCoefficient;
 }
+
 
 int main() {
     // Step 1: Choose two distinct prime numbers
@@ -80,6 +100,8 @@ int main() {
     // Step 5: Compute the decryption key d
     int d = modInverse(e, phiN);
 
+    // Step 1 to 5: Key generation remains the same
+
     std::cout << "Public Key: (e = " << e << ", n = " << n << ")" << std::endl;
     std::cout << "Private Key: (d = " << d << ", n = " << n << ")" << std::endl;
 
@@ -111,3 +133,4 @@ int main() {
 
     return 0;
 }
+
