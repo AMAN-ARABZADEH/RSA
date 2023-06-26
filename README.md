@@ -1,5 +1,5 @@
 # RSA Encryption/Decryption Code
-
+<img src="https://t.bkit.co/w_649944500f31e.gif" />
 This repository contains an implementation of the RSA encryption and decryption algorithm in C++.
 RSA (Rivest-Shamir-Adleman) is a widely used public-key cryptographic algorithm that allows secure communication between two parties over an insecure channel.
 
@@ -46,5 +46,4 @@ To use the code, follow these steps:
 Contributions to this repository are welcome. If you have any suggestions, bug fixes, or improvements, please feel free to open an issue or submit a pull request.
 
 ## Source:  https://en.wikipedia.org/wiki/RSA_(cryptosystem)
-<img src="https://t.bkit.co/w_649944500f31e.gif" />
 
