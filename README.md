@@ -40,6 +40,9 @@ To use the code, follow these steps:
 - The current implementation only supports ASCII characters for encryption and decryption. It could be enhanced to handle Unicode characters.
 - Error handling and input validation can be improved to handle unexpected user inputs gracefully.
 - The code can be optimized further for efficiency and performance.
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
