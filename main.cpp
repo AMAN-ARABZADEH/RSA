@@ -1,33 +1,25 @@
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <string>
-#include <sstream> // Include the <sstream> header
+#include <sstream>
+#include <stdexcept>
+#include <algorithm>
 
-/*
- * Sources:
- * https://en.wikipedia.org/wiki/RSA_(cryptosystem)
- * geeksforgeeks.org/euclidean-algorithms-basic-and-extended/
- * https://www.geeksforgeeks.org/c-program-to-check-prime-number/
- * https://en.wikipedia.org/wiki/Modular_exponentiation
- */
-
+typedef long long large_int;
 
 // Function to check if a number is prime
-//  https://www.geeksforgeeks.org/c-program-to-check-prime-number/
-bool isPrime(int num) {
-    if (num <= 1)
-        return false;
-    for (int i = 2; i <= sqrt(num); i++) {
-        if (num % i == 0)
-            return false;
+bool isPrime(large_int num) {
+    if (num <= 1) return false;
+    for (large_int i = 2; i <= sqrt(num); ++i) {
+        if (num % i == 0) return false;
     }
     return true;
 }
 
-// Function to compute the modular exponentiation
-// https://en.wikipedia.org/wiki/Modular_exponentiation
-int modExp(int base, int exponent, int modulus) {
-    int result = 1;
+// Function for modular exponentiation
+large_int modExp(large_int base, large_int exponent, large_int modulus) {
+    large_int result = 1;
     base = base % modulus;
     while (exponent > 0) {
         if (exponent % 2 == 1)
@@ -38,99 +30,190 @@ int modExp(int base, int exponent, int modulus) {
     return result;
 }
 
-// Function to calculate the modular inverse using the Extended Euclidean Algorithm
-// geeksforgeeks.org/euclidean-algorithms-basic-and-extended/
-int modInverse(int number, int modulus) {
-    int originalModulus = modulus;
-    int temporary, quotient;
-    int previousCoefficient = 0, currentCoefficient = 1;
+// Function to calculate the modular inverse using Extended Euclidean Algorithm
+large_int modInverse(large_int a, large_int m) {
+    large_int m0 = m, t, q;
+    large_int x0 = 0, x1 = 1;
 
-    if (modulus == 1)
+    if (m == 1)
         return 0;
 
-    while (number > 1) {
-        quotient = number / modulus;
-        temporary = modulus;
-        modulus = number % modulus;
-        number = temporary;
+    while (a > 1) {
+        // q is quotient
+        q = a / m;
+        t = m;
 
-        temporary = previousCoefficient;
-        previousCoefficient = currentCoefficient - quotient * previousCoefficient;
-        currentCoefficient = temporary;
+        // m is remainder now, process same as Euclid's algo
+        m = a % m, a = t;
+        t = x0;
+        x0 = x1 - q * x0;
+        x1 = t;
     }
 
-    if (currentCoefficient < 0)
-        currentCoefficient += originalModulus;
+    // Make x1 positive
+    if (x1 < 0)
+        x1 += m0;
 
-    return currentCoefficient;
+    return x1;
+}
+
+// Function to read a file into a string
+std::string readFile(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file) {
+        throw std::runtime_error("Cannot open file: " + filename);
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
+// Function to write a string to a file
+void writeFile(const std::string& filename, const std::string& content) {
+    std::ofstream file(filename);
+    if (!file) {
+        throw std::runtime_error("Cannot open file: " + filename);
+    }
+    file << content;
+}
+
+void encryptFunction(large_int e, large_int n) {
+    std::string plaintextFilename, ciphertextFilename;
+
+    std::cout << "Enter the plaintext filename: ";
+    std::cin >> plaintextFilename;
+    plaintextFilename = "C:/Users/amana/CLionProjects/RSA/" + plaintextFilename;
+
+    std::string ciphertext = "";
+    try {
+        std::string plaintext = readFile(plaintextFilename);
+
+        for (char c : plaintext) {
+            large_int encryptedValue = modExp(static_cast<large_int>(c), e, n);
+            ciphertext += std::to_string(encryptedValue) + " ";
+        }
+
+        std::cout << "Enter the filename to save encrypted data: ";
+        std::cin >> ciphertextFilename;
+
+        writeFile(ciphertextFilename, ciphertext);
+        std::cout << "Encryption complete. Data written to " << ciphertextFilename << std::endl;
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << std::endl;
+    }
+}
+
+void decryptFunction(large_int d, large_int n) {
+    std::string ciphertextFilename;
+
+    std::cout << "Enter the filename of the encrypted data: ";
+    std::cin >> ciphertextFilename;
+    ciphertextFilename = "C:/Users/amana/CLionProjects/RSA/" + ciphertextFilename;
+
+    try {
+        std::string ciphertext = readFile(ciphertextFilename);
+        std::string decryptedText = "";
+        std::istringstream iss(ciphertext);
+        std::string token;
+
+        while (iss >> token) {
+            large_int decryptedValue = modExp(std::stoll(token), d, n);
+            decryptedText += static_cast<char>(decryptedValue);
+        }
+
+        std::cout << "Decrypted Message: " << decryptedText << std::endl;
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << std::endl;
+    }
 }
 
 
 int main() {
-    // Step 1: Choose two distinct prime numbers
-    int p, q;
-    std::cout << "Enter the value of p (prime number): ";
-    std::cin >> p;
-    std::cout << "Enter the value of q (prime number): ";
-    std::cin >> q;
+    large_int p, q, e;
 
-    // Check if p and q are prime
+    // Input for p and q
+    std::cout << "Enter two distinct prime numbers (p and q): ";
+    std::cin >> p >> q;
+
     if (!isPrime(p) || !isPrime(q)) {
-        std::cout << "p and q must be prime numbers." << std::endl;
-        return 0;
+        std::cout << "Both numbers must be prime." << std::endl;
+        return 1;
     }
 
-    // Step 2: Compute n = p * q
-    int n = p * q;
+    large_int n = p * q;
+    large_int phiN = (p - 1) * (q - 1);
 
-    // Step 3: Compute φ(n) = (p - 1) * (q - 1)
-    int phiN = (p - 1) * (q - 1);
-
-    // Step 4: Choose an encryption key e (1 < e < φ(n)) such that gcd(e, φ(n)) = 1
-    int e;
-    std::cout << "Enter the value of e (encryption key): ";
+    // Input for e
+    std::cout << "Enter the encryption key e (1 < e < " << phiN << "): ";
     std::cin >> e;
 
-    // Check if e and phiN are coprime
     if (e <= 1 || e >= phiN || std::__gcd(e, phiN) != 1) {
-        std::cout << "e must be greater than 1 and coprime with phi(n)." << std::endl;
-        return 0;
+        std::cout << "Invalid encryption key." << std::endl;
+        return 1;
     }
 
-    // Step 5: Compute the decryption key d
-    int d = modInverse(e, phiN);
-
-    // Step 1 to 5: Key generation remains the same
+    large_int d = modInverse(e, phiN);
 
     std::cout << "Public Key: (e = " << e << ", n = " << n << ")" << std::endl;
     std::cout << "Private Key: (d = " << d << ", n = " << n << ")" << std::endl;
 
-    // Encryption
-    std::string plaintext;
-    std::cout << "Enter the plaintext message: ";
-    std::cin.ignore();
-    std::getline(std::cin, plaintext);
+    std::string plaintextFilename, ciphertextFilename;
+
+    // Reading plaintext from file
+    std::cout << "Enter the plaintext filename: ";
+    std::cin >> plaintextFilename;
+    plaintextFilename = "C:/Users/amana/CLionProjects/RSA/" + plaintextFilename +  ".txt";
+
 
     std::string ciphertext = "";
-    for (char c : plaintext) {
-        int numericValue = static_cast<int>(c);
-        int encryptedValue = modExp(numericValue, e, n);
-        ciphertext += std::to_string(encryptedValue) + " ";
-    }
-    std::cout << "Encrypted Message (Ciphertext): " << ciphertext << std::endl;
+    try {
+        std::string plaintext = readFile(plaintextFilename);
 
-    // Decryption
+        for (char c : plaintext) {
+            large_int encryptedValue = modExp(static_cast<large_int>(c), e, n);
+            ciphertext += std::to_string(encryptedValue) + " ";
+        }
+
+        std::cout << "Enter the filename to save encrypted data: ";
+        std::cin >> ciphertextFilename;
+        ciphertextFilename = "C:/Users/amana/CLionProjects/RSA/" + ciphertextFilename + ".txt";
+
+        writeFile(ciphertextFilename, ciphertext);
+        std::cout << "Encryption complete. Data written to " << ciphertextFilename << std::endl;
+    } catch (const std::exception& ex) {
+        std::cerr << "Error: " << ex.what() << std::endl;
+        return 1;
+    }
+
+    // Decrypting text
     std::string decryptedText = "";
     std::istringstream iss(ciphertext);
     std::string token;
+
     while (iss >> token) {
-        int encryptedValue = std::stoi(token);
-        int decryptedValue = modExp(encryptedValue, d, n);
-        char decryptedChar = static_cast<char>(decryptedValue);
-        decryptedText += decryptedChar;
+        large_int decryptedValue = modExp(std::stoll(token), d, n);
+        decryptedText += static_cast<char>(decryptedValue);
     }
-    std::cout << "Decrypted Message (Plaintext): " << decryptedText << std::endl;
+
+    std::cout << "Decrypted Message: " << decryptedText << std::endl;
+
+    int choice;
+    std::cout << "RSA Encryption/Decryption Program\n";
+    std::cout << "1. Encrypt\n";
+    std::cout << "2. Decrypt\n";
+    std::cout << "Enter your choice (1 or 2): ";
+    std::cin >> choice;
+
+    if (choice != 1 && choice != 2) {
+        std::cerr << "Invalid choice. Exiting program.\n";
+        return 1;
+    }
+
+    if (choice == 1) {
+        encryptFunction(e, n);
+    } else {
+        decryptFunction(d, n);
+    }
 
     return 0;
 }
-
