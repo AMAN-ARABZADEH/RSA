@@ -76,39 +76,40 @@ void writeFile(const std::string& filename, const std::string& content) {
     }
     file << content;
 }
-
 void encryptFunction(large_int e, large_int n) {
     std::string plaintextFilename, ciphertextFilename;
 
-    std::cout << "Enter the plaintext filename: ";
+    std::cout << "Enter the plaintext filename (e.g., message.txt): ";
     std::cin >> plaintextFilename;
-    plaintextFilename = "C:/Users/amana/CLionProjects/RSA/" + plaintextFilename;
+    plaintextFilename = "C:/Users/amana/CLionProjects/RSA/" + plaintextFilename + ".txt";
 
     std::string ciphertext = "";
     try {
         std::string plaintext = readFile(plaintextFilename);
 
+        std::cout << "\nEncrypting...\n";
         for (char c : plaintext) {
             large_int encryptedValue = modExp(static_cast<large_int>(c), e, n);
             ciphertext += std::to_string(encryptedValue) + " ";
         }
 
-        std::cout << "Enter the filename to save encrypted data: ";
+        std::cout << "Enter the filename to save encrypted data (e.g., encrypted.txt): ";
         std::cin >> ciphertextFilename;
+        ciphertextFilename = "C:/Users/amana/CLionProjects/RSA/" + ciphertextFilename + ".txt";
 
         writeFile(ciphertextFilename, ciphertext);
-        std::cout << "Encryption complete. Data written to " << ciphertextFilename << std::endl;
+        std::cout << "Encryption complete. Encrypted data written to: " << ciphertextFilename << "\n";
     } catch (const std::exception& ex) {
-        std::cerr << "Error: " << ex.what() << std::endl;
+        std::cerr << "Encryption Error: " << ex.what() << "\n";
     }
 }
 
 void decryptFunction(large_int d, large_int n) {
     std::string ciphertextFilename;
 
-    std::cout << "Enter the filename of the encrypted data: ";
+    std::cout << "Enter the filename of the encrypted data (e.g., encrypted.txt): ";
     std::cin >> ciphertextFilename;
-    ciphertextFilename = "C:/Users/amana/CLionProjects/RSA/" + ciphertextFilename;
+    ciphertextFilename = "C:/Users/amana/CLionProjects/RSA/" + ciphertextFilename + ".txt";
 
     try {
         std::string ciphertext = readFile(ciphertextFilename);
@@ -116,14 +117,15 @@ void decryptFunction(large_int d, large_int n) {
         std::istringstream iss(ciphertext);
         std::string token;
 
+        std::cout << "\nDecrypting...\n";
         while (iss >> token) {
             large_int decryptedValue = modExp(std::stoll(token), d, n);
             decryptedText += static_cast<char>(decryptedValue);
         }
 
-        std::cout << "Decrypted Message: " << decryptedText << std::endl;
+        std::cout << "Decrypted Message:\n" << decryptedText << "\n";
     } catch (const std::exception& ex) {
-        std::cerr << "Error: " << ex.what() << std::endl;
+        std::cerr << "Decryption Error: " << ex.what() << "\n";
     }
 }
 
@@ -185,6 +187,7 @@ int main() {
         return 1;
     }
 
+
     // Decrypting text
     std::string decryptedText = "";
     std::istringstream iss(ciphertext);
@@ -208,7 +211,8 @@ int main() {
         std::cerr << "Invalid choice. Exiting program.\n";
         return 1;
     }
-
+//  Public Key: (e = 17, n = 3233)
+// Private Key: (d = 2753, n = 3233)
     if (choice == 1) {
         encryptFunction(e, n);
     } else {
